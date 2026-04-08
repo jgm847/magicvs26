@@ -3,6 +3,8 @@ import { MainLayout } from './layouts/main-layout/main-layout';
 import { Home } from './features/home/home';
 import { NewsComponent } from './features/news/news';
 import { MetaComponent } from './features/meta/meta';
+import { Login } from './features/login/login';
+import { Registro } from './features/registro/registro';
 
 export const routes: Routes = [
   {
@@ -11,7 +13,9 @@ export const routes: Routes = [
     children: [
       { path: '', component: Home },
       { path: 'noticias', component: NewsComponent },
-      { path: 'meta', component: MetaComponent }
+      { path: 'meta', component: MetaComponent },
+      { path: 'login', component: Login },
+      { path: 'registro', component: Registro }
     ]
   }
 ];
