@@ -1,0 +1,150 @@
+<div class="min-h-screen bg-zinc-950 text-zinc-100 font-body transition-colors duration-500 pt-24 pb-20">
+  
+  <!-- Header -->
+  <header class="max-w-6xl mx-auto px-6 mb-12">
+    <h1 class="text-6xl font-headline font-black tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-zinc-100 to-zinc-500">
+      Metajuego Standard
+    </h1>
+    <p class="text-zinc-500 text-lg max-w-2xl Manrope font-light">
+      Analiza los arquetipos más dominantes del formato. Datos actualizados basados en los últimos torneos competitivos y el meta global.
+    </p>
+  </header>
+
+  <!-- Filters -->
+  <div class="max-w-6xl mx-auto px-6 mb-10 flex flex-wrap items-center justify-between gap-6">
+    <div class="flex items-center gap-2 p-1 bg-zinc-900/50 rounded-2xl border border-zinc-800/50 backdrop-blur-md">
+      <button *ngFor="let filter of filters" 
+              (click)="setFilter(filter)"
+              [class.bg-primary]="activeFilter === filter"
+              [class.text-zinc-100]="activeFilter === filter"
+              [style.backgroundColor]="activeFilter === filter ? 'var(--color-primary)' : 'transparent'"
+              class="px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 hover:text-zinc-100 text-zinc-500">
+        {{filter}}
+      </button>
+    </div>
+    
+    <div class="flex items-center gap-4 bg-zinc-900/50 px-4 py-2 rounded-2xl border border-zinc-800/50 text-zinc-400 text-sm">
+      <span class="material-symbols-outlined text-xl">calendar_month</span>
+      <span class="font-bold">Últimas 2 semanas</span>
+      <span class="material-symbols-outlined text-zinc-600">expand_more</span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex flex-col items-center justify-center py-40">
+    <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" [style.borderColor]="'var(--color-primary) transparent var(--color-primary) var(--color-primary)'"></div>
+    <span class="text-zinc-500 animate-pulse">Analizando el meta...</span>
+  </div>
+
+  <!-- Archetype List -->
+  <div *ngIf="!loading" class="max-w-6xl mx-auto px-6 space-y-6">
+    <div *ngFor="let archetype of getFilteredArchetypes()" 
+         class="group bg-zinc-900/30 border border-zinc-800/40 rounded-3xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:border-zinc-700/50 hover:shadow-2xl hover:shadow-primary/5">
+      
+      <!-- Summary Row -->
+      <div (click)="toggleExpand(archetype.id)" 
+           class="flex flex-wrap items-center justify-between p-8 cursor-pointer relative">
+        
+        <div class="flex items-center gap-8">
+          <!-- Tier Badge -->
+          <div class="flex flex-col items-center justify-center w-16 h-16 bg-zinc-950 rounded-2xl border border-zinc-800 group-hover:border-primary transition-colors duration-500">
+            <span class="material-symbols-outlined text-tertiary" [style.color]="'var(--color-tertiary)'">workspace_premium</span>
+            <span class="text-[10px] uppercase font-black text-zinc-500">Tier {{archetype.tier}}</span>
+          </div>
+
+          <!-- Title & Key Cards -->
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <h2 class="text-2xl font-black tracking-tight group-hover:text-primary transition-colors" [ngStyle]="{'--color-primary-hover': 'var(--color-primary)'}">{{archetype.name}}</h2>
+              <div class="flex gap-1">
+                <div class="w-2 h-2 rounded-full bg-zinc-100"></div>
+                <div class="w-2 h-2 rounded-full" [style.backgroundColor]="'var(--color-secondary)'"></div>
+              </div>
+            </div>
+            <p class="text-zinc-500 text-sm Manrope italic">
+              Key cards: <span class="text-zinc-400">{{archetype.cards[0]?.name}}, {{archetype.cards[1]?.name}}...</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-16">
+          <div class="text-center">
+            <span class="block text-2xl font-black text-primary" [style.color]="'var(--color-primary)'">{{archetype.metaPercentage}}% Meta</span>
+            <span class="text-[10px] uppercase text-zinc-600 font-bold tracking-widest">Presencia</span>
+          </div>
+          <div class="text-center">
+            <span class="block text-2xl font-black text-zinc-100">{{archetype.winRate}}% WR</span>
+            <span class="text-[10px] uppercase text-zinc-600 font-bold tracking-widest">Win Rate</span>
+          </div>
+          <button class="p-2 transition-transform duration-500" [class.rotate-180]="expandedArchetypeId === archetype.id">
+            <span class="material-symbols-outlined text-zinc-600">expand_more</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Expanded Deck View -->
+      <div [@detailExpand]="expandedArchetypeId === archetype.id ? 'expanded' : 'collapsed'" 
+           class="overflow-hidden bg-zinc-950/40">
+        
+        <div class="p-8 border-t border-zinc-800/30">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            
+            <!-- Stats Column -->
+            <div class="lg:col-span-3 space-y-8">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden border border-zinc-700">
+                  <span class="material-symbols-outlined text-zinc-400">person</span>
+                </div>
+                <div>
+                  <span class="block text-[10px] uppercase text-zinc-600 font-bold">Top Player</span>
+                  <span class="text-primary font-bold" [style.color]="'var(--color-primary)'">@{{archetype.topPlayer || 'ProPlayer_X'}}</span>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="flex justify-between items-center p-4 bg-zinc-900/40 rounded-2xl border border-zinc-800/50">
+                  <span class="text-zinc-400 text-sm uppercase font-bold tracking-tight">Criaturas</span>
+                  <span class="text-xl font-black">{{archetype.creaturesCount}}</span>
+                </div>
+                <div class="flex justify-between items-center p-4 bg-zinc-900/40 rounded-2xl border border-zinc-800/50">
+                  <span class="text-zinc-400 text-sm uppercase font-bold tracking-tight">Hechizos</span>
+                  <span class="text-xl font-black">{{archetype.spellsCount}}</span>
+                </div>
+                <div class="flex justify-between items-center p-4 bg-zinc-900/40 rounded-2xl border border-zinc-800/50">
+                  <span class="text-zinc-400 text-sm uppercase font-bold tracking-tight">Tierras</span>
+                  <span class="text-xl font-black">{{archetype.landsCount}}</span>
+                </div>
+              </div>
+
+              <button class="w-full py-4 bg-primary rounded-2xl font-black shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform active:scale-95" [style.backgroundColor]="'var(--color-primary)'">
+                Ver lista completa
+              </button>
+            </div>
+
+            <!-- Cards Preview -->
+            <div class="lg:col-span-9">
+              <div class="flex gap-4 overflow-x-auto pb-6 scrollbar-hide">
+                <div *ngFor="let card of archetype.cards.slice(0, 10)" 
+                     class="min-w-[180px] group/card cursor-pointer">
+                  <div class="relative rounded-xl overflow-hidden shadow-2xl transition-all duration-500 group-hover/card:-translate-y-4 group-hover/card:shadow-primary/30 group-hover/card:ring-2 ring-primary">
+                    <img [src]="'https://api.scryfall.com/cards/' + card.scryfallId + '?format=image&version=normal'" 
+                         class="w-full h-auto object-cover" 
+                         [alt]="card.name">
+                    <div class="absolute top-2 right-2 bg-zinc-950/80 backdrop-blur-md px-2 py-1 rounded-lg border border-zinc-700 text-xs font-black">
+                      {{card.quantity}}
+                    </div>
+                  </div>
+                  <p class="mt-4 text-xs font-bold text-center text-zinc-500 uppercase tracking-widest group-hover/card:text-zinc-100 transition-colors">
+                    {{card.name}}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

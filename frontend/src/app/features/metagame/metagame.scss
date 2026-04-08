@@ -1,0 +1,49 @@
+:host {
+  display: block;
+}
+
+.font-headline {
+  font-family: var(--font-headline), 'Inter', sans-serif;
+}
+
+.Manrope {
+  font-family: 'Manrope', 'Inter', sans-serif;
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.text-tertiary {
+  color: var(--color-tertiary);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.card-float:hover {
+  animation: float 3s ease-in-out infinite;
+}
+
+// Glassmorphism helper
+.glass {
+  background: rgba(18, 18, 18, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}

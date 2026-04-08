@@ -11,7 +11,11 @@ export const routes: Routes = [
     children: [
       { path: '', component: Home },
       { path: 'login', component: Login },
-      { path: 'registro', component: Registro }
-    ]
-  }
+      { path: 'registro', component: Registro },
+      {
+        path: 'metagame',
+        loadComponent: () => import('./features/metagame/metagame').then((m) => m.Metagame),
+      },
+    ],
+  },
 ];
