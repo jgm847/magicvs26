@@ -1,0 +1,38 @@
+package com.magicvs.backend.controller;
+
+import com.magicvs.backend.repository.CardRepository;
+import com.magicvs.backend.repository.CardSetRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.web.bind.annotation.*;
+import com.magicvs.backend.model.Card;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/cards")
+public class CardController {
+
+    @Autowired
+    private CardRepository cardRepository;
+
+    @Autowired
+    private CardSetRepository cardSetRepository;
+
+    @GetMapping("/stats")
+    public Map<String, Object> getStats() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalCards", cardRepository.count());
+        stats.put("totalSets", cardSetRepository.count());
+        return stats;
+    }
+
+    @GetMapping("/list")
+    public Page<Card> listCards(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return cardRepository.findAll(PageRequest.of(page, size));
+    }
+}

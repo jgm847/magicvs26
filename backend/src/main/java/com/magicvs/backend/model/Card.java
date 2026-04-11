@@ -45,7 +45,6 @@ public class Card {
     @Column(name = "type_line")
     private String typeLine;
 
-    @Lob
     @Column(name = "oracle_text", columnDefinition = "TEXT")
     private String oracleText;
 
@@ -59,7 +58,6 @@ public class Card {
 
     private String rarity;
 
-    @Lob
     @Column(name = "flavor_text", columnDefinition = "TEXT")
     private String flavorText;
 
@@ -147,7 +145,6 @@ public class Card {
     @Column(name = "related_uris_json", columnDefinition = "TEXT")
     private String relatedUrisJson;
 
-    @Lob
     @Column(name = "raw_json", columnDefinition = "TEXT")
     private String rawJson;
 
@@ -155,15 +152,19 @@ public class Card {
     private LocalDateTime syncedAt;
 
     @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<CardFace> faces = new ArrayList<>();
 
     @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<CardLegality> legalities = new ArrayList<>();
 
     @OneToOne(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private CardPrice price;
 
     @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Ruling> rulings = new ArrayList<>();
 
     public Card() {

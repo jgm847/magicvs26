@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.http.HttpHeaders;
 
 @SpringBootApplication
 @EnableScheduling
@@ -32,6 +33,16 @@ public class MagicVsApplication {
 
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate();
+        
+        // Añadimos un interceptor para configurar las cabeceras requeridas por Scryfall globalmente
+        restTemplate.getInterceptors().add((request, body, execution) -> {
+            HttpHeaders headers = request.getHeaders();
+            headers.set("User-Agent", "MagicVS-App/1.0 (PROYECTO_PERSONAL)");
+            headers.set("Accept", "application/json");
+            return execution.execute(request, body);
+        });
+        
+        return restTemplate;
     }
 }

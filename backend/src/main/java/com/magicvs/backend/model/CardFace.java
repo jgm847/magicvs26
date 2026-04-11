@@ -26,7 +26,6 @@ public class CardFace {
     @Column(name = "type_line")
     private String typeLine;
 
-    @Lob
     @Column(name = "oracle_text", columnDefinition = "TEXT")
     private String oracleText;
 
@@ -35,7 +34,6 @@ public class CardFace {
     private String loyalty;
     private String defense;
 
-    @Lob
     @Column(name = "flavor_text", columnDefinition = "TEXT")
     private String flavorText;
 
@@ -63,7 +61,6 @@ public class CardFace {
     @Column(name = "border_crop_uri", columnDefinition = "TEXT")
     private String borderCropUri;
 
-    @Lob
     @Column(name = "raw_json", columnDefinition = "TEXT")
     private String rawJson;
 

@@ -11,6 +11,8 @@ public interface CardRepository extends JpaRepository<Card, Long> {
 
     Optional<Card> findByScryfallId(UUID scryfallId);
 
+    List<Card> findByOracleId(UUID oracleId);
+
     List<Card> findByNameContainingIgnoreCase(String name);
 
     boolean existsByScryfallId(UUID scryfallId);
