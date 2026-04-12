@@ -30,7 +30,7 @@ public class RegistroService {
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
 
         if (!ValidationUtils.isValidUsername(normalizedUsername)) {
-            throw new IllegalArgumentException("Nombre de usuario inválido. Solo letras, números, guion bajo y guion medio (3-30 caracteres)");
+            throw new IllegalArgumentException("Nombre de usuario inválido. Solo letras (A-Z, a-z), guion bajo o guion medio (3-16 caracteres)");
         }
         if (!ValidationUtils.isValidEmail(normalizedEmail)) {
             throw new IllegalArgumentException("Email con formato inválido");

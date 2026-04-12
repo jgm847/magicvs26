@@ -6,11 +6,12 @@ public final class ValidationUtils {
 
     private ValidationUtils() {}
 
-    // allow letters, numbers, spaces, underscore and hyphen (3-30 chars)
-    private static final Pattern USERNAME = Pattern.compile("^[A-Za-z0-9 _-]{3,30}$");
+    // only letters (A-Z, a-z), underscore and hyphen (3-16 chars). No spaces or digits.
+    private static final Pattern USERNAME = Pattern.compile("^[A-Za-z_-]{3,16}$");
     private static final Pattern EMAIL = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     private static final Pattern PASSWORD = Pattern.compile("^(?=.{8,12}$)(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).*$");
-    private static final Pattern DISPLAYNAME = Pattern.compile("^[\\p{L}0-9_-]{1,50}$");
+    // display names: unicode letters, underscore and hyphen, 1-16 chars (no spaces, no digits)
+    private static final Pattern DISPLAYNAME = Pattern.compile("^[\\p{L}_-]{1,16}$");
 
     public static boolean isValidUsername(String username) {
         if (username == null) return false;
@@ -40,11 +41,11 @@ public final class ValidationUtils {
         if (input == null) return null;
         // Remove HTML tags
         String stripped = input.replaceAll("<.*?>", "");
-        // Allow letters, numbers, spaces, underscore, hyphen
-        String cleaned = stripped.replaceAll("[^\\p{L}0-9 _\\-]", "");
-        // Trim and limit length
-        if (cleaned.length() > 50) {
-            cleaned = cleaned.substring(0, 50);
+        // Allow unicode letters, underscore and hyphen only; remove spaces/digits/specials
+        String cleaned = stripped.replaceAll("[^\\p{L}_\\-]", "");
+        // Trim and limit length to 16
+        if (cleaned.length() > 16) {
+            cleaned = cleaned.substring(0, 16);
         }
         return cleaned.trim();
     }

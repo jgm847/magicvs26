@@ -17,7 +17,7 @@
           [(ngModel)]="username"
           (input)="onInputChange()"
           class="w-full h-10 rounded-md bg-surface-container/80 border border-outline-variant/40 px-3 text-sm text-zinc-100 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-          placeholder="Nombre de usuario"
+          placeholder="Ej: Magicvs_Great"
           required
         />
       </div>
@@ -61,7 +61,7 @@
           [(ngModel)]="displayName"
           (input)="onInputChange()"
           class="w-full h-10 rounded-md bg-surface-container/80 border border-outline-variant/40 px-3 text-sm text-zinc-100 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
-          placeholder="Magicvs the Great"
+          placeholder="Ej: Magicvs_Great"
         />
       </div>
 
@@ -69,12 +69,15 @@
       <button
         type="submit"
         [disabled]="loading"
-        class="w-full arcane-gradient py-3 rounded-md font-bold text-on-primary mt-4"
+        class="w-full py-3 rounded-md bg-purple-600/80 text-white font-bold tracking-wider uppercase Manrope text-sm shadow-lg shadow-purple-900/40 hover:bg-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
       >
         @if (!loading) {
           <span>Registrarme</span>
         } @else {
-          <span>Registrando...</span>
+          <div class="flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined animate-spin text-xl">progress_activity</span>
+            <span>Registrando...</span>
+          </div>
         }
       </button>
 

@@ -32,7 +32,11 @@ export class Registro {
 
     // Frontend validation
     if (!isValidUsername(this.username)) {
-      this.error = 'Usuario inválido. Solo letras, números, espacios, guion bajo o guion medio (3-30 caracteres).';
+      if (/\s/.test(this.username)) {
+        this.error = 'El nombre de usuario no puede contener espacios.';
+      } else {
+        this.error = 'Usuario inválido. Solo letras (A-Z, a-z), guion bajo o guion medio (3-16 caracteres).';
+      }
       return;
     }
     if (!isValidEmail(this.email)) {
