@@ -17,11 +17,11 @@ import java.util.Locale;
 @RequestMapping("/api/cards")
 @CrossOrigin(origins = "http://localhost:4200")
 @Transactional(readOnly = true)
-public class CardControllerCardsExamples {
+public class CardsExamplesController {
 
     private final CardRepository cardRepository;
 
-    public CardControllerCardsExamples(CardRepository cardRepository) {
+    public CardsExamplesController(CardRepository cardRepository) {
         this.cardRepository = cardRepository;
     }
 
