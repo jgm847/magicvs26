@@ -80,7 +80,7 @@
           
           @if (showRarityDropdown()) {
             <div class="absolute top-full left-0 w-full mt-2 glass-panel border border-outline-variant rounded-xl overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
-              @for (rarity of ['Rareza', 'Common', 'Uncommon', 'Rare', 'Mythic']; track rarity) {
+              @for (rarity of ['Rareza', 'Común', 'Infrecuente', 'Rara', 'Mítica']; track rarity) {
                 <div 
                   (click)="selectRarity(rarity)"
                   class="px-6 py-2.5 text-sm hover:bg-primary/20 cursor-pointer transition-colors"
@@ -147,7 +147,7 @@
           <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6 pointer-events-none">
             <h3 class="font-headline text-lg font-bold text-white">{{ card.name }}</h3>
             <div class="flex justify-between items-center mt-2">
-              <span class="text-xs text-primary-fixed uppercase tracking-tighter font-label">{{ card.rarity }}</span>
+              <span class="text-xs text-primary-fixed uppercase tracking-tighter font-label">{{ rarityLabel(card.rarity) }}</span>
               <span class="text-sm font-bold text-secondary">{{ getManaCostString(card.manaCost) }}</span>
             </div>
           </div>

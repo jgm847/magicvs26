@@ -63,6 +63,25 @@ export class CatalogComponent implements OnInit, OnDestroy {
     }
   }
 
+  private readonly rarityApiMap: Record<string, string> = {
+    'Rareza': '',
+    'Común': 'common',
+    'Infrecuente': 'uncommon',
+    'Rara': 'rare',
+    'Mítica': 'mythic'
+  };
+
+  private readonly rarityDisplayMap: Record<string, string> = {
+    'Common': 'Común',
+    'Uncommon': 'Infrecuente',
+    'Rare': 'Rara',
+    'Mythic': 'Mítica'
+  };
+
+  rarityLabel(rarity: string): string {
+    return this.rarityDisplayMap[rarity] || rarity;
+  }
+
   private readonly typeMap: Record<string, string> = {
     'Tipo': '',
     'Criatura': 'creature',
@@ -103,7 +122,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
       query: this.searchQuery(),
       color: this.activeMana().join(','),
       type: this.typeMap[this.activeType()] ?? '',
-      rarity: this.activeRarity() === 'Rareza' ? '' : this.activeRarity(),
+      rarity: this.rarityApiMap[this.activeRarity()] ?? '',
       page
     };
   }
