@@ -12,6 +12,7 @@ import com.magicvs.backend.model.User;
 import com.magicvs.backend.repository.FavoriteCardRepository;
 import com.magicvs.backend.repository.RegistroRepository;
 import com.magicvs.backend.service.AuthService;
+import com.magicvs.backend.service.AchievementService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,6 +64,9 @@ public class CardController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private AchievementService achievementService;
 
     @GetMapping("/stats")
     public Map<String, Object> getStats() {
@@ -217,6 +221,12 @@ public class CardController {
             return ResponseEntity.ok(Map.of("isFavorite", false));
         } else {
             favoriteCardRepository.save(new FavoriteCard(user, card));
+            // Increment favorite-related achievements (first + cumulative thresholds)
+            achievementService.increment(user, "FAVORITES_FIRST");
+            achievementService.increment(user, "FAVORITES_10");
+            achievementService.increment(user, "FAVORITES_50");
+            achievementService.increment(user, "FAVORITES_200");
+            achievementService.increment(user, "FAVORITES_1000");
             return ResponseEntity.ok(Map.of("isFavorite", true));
         }
     }
