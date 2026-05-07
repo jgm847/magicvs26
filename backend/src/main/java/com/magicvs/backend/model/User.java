@@ -32,6 +32,13 @@ public class User {
     @Column(length = 500)
     private String bio;
 
+// --- LÓGICA DE PERFIL Y LOGROS  ---
+    @Column(name = "profile_title", length = 150)
+    private String profileTitle;
+
+    @Column(name = "featured_achievement_keys", columnDefinition = "TEXT")
+    private String featuredAchievementKeys;
+
     // --- LÓGICA DE ELO Y ESTADÍSTICAS ---
     @Column(name = "elo_rating", nullable = false)
     private Integer eloRating = 1200;
@@ -150,6 +157,25 @@ public class User {
 
     public Integer getGamesLost() { return gamesLost; }
     public void setGamesLost(Integer gamesLost) { this.gamesLost = gamesLost; }
+    public String getProfileTitle() {
+        return profileTitle;
+    }
+
+    public void setProfileTitle(String profileTitle) {
+        this.profileTitle = profileTitle;
+    }
+
+    public String getFeaturedAchievementKeys() {
+        return featuredAchievementKeys;
+    }
+
+    public void setFeaturedAchievementKeys(String featuredAchievementKeys) {
+        this.featuredAchievementKeys = featuredAchievementKeys;
+    }
+
+    public Integer getEloRating() {
+        return eloRating;
+    }
 
     public String getFriendTag() { return friendTag; }
     public void setFriendTag(String friendTag) { this.friendTag = friendTag; }
