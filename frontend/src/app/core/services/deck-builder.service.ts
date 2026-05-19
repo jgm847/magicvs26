@@ -314,19 +314,16 @@ export class DeckBuilderService {
    */
   getDeckById(deckId: number): Observable<any> {
     const token = localStorage.getItem('token') || localStorage.getItem('authToken') || '';
-    const headers = token
-      ? new HttpHeaders({ 'Authorization': `Bearer ${token}` })
-      : new HttpHeaders();
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
     return this.http.get(`${this.apiUrl}/${deckId}`, { headers });
   }
 
   isBasicLandType(typeLine: string): boolean {
     return (typeLine || '').toLowerCase().includes('basic land');
   }
-  getPublicDecks(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/public`);
-  }
-
   /**
    * Copia un mazo de otro usuario
    */
