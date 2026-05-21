@@ -11,6 +11,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.*;
 
 @Service
+@Profile("worker")
 public class MetaScrapingService {
 
     private static final Logger log = LoggerFactory.getLogger(MetaScrapingService.class);
@@ -206,6 +208,7 @@ public class MetaScrapingService {
 
         } catch (Exception e) {
             log.error("Fallo crítico durante el scraping de MTGGoldfish: {}", e.getMessage(), e);
+            throw new TransientIngestionException("Fallo crítico durante el scraping de MTGGoldfish", e);
         }
     }
 }

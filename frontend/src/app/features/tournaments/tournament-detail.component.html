@@ -138,6 +138,7 @@
                     class="match-card"
                     [style.left.px]="layout.cardX"
                     [style.top.px]="layout.cardY"
+                    [style.height.px]="layout.cardHeight"
                     [class.path-active]="isMatchPathActive(layout.match.id)"
                     [class.live]="isPlaying(layout.match)"
                   >
@@ -210,6 +211,7 @@
                     class="match-card mirrored"
                     [style.left.px]="layout.cardX"
                     [style.top.px]="layout.cardY"
+                    [style.height.px]="layout.cardHeight"
                     [class.path-active]="isMatchPathActive(layout.match.id)"
                     [class.live]="isPlaying(layout.match)"
                   >
@@ -277,6 +279,7 @@
                   class="match-card final"
                   [style.left.px]="finalLayout.cardX"
                   [style.top.px]="finalLayout.cardY"
+                  [style.height.px]="finalLayout.cardHeight"
                   [class.path-active]="isMatchPathActive(finalLayout.match.id)"
                   [class.live]="isPlaying(finalLayout.match)"
                 >

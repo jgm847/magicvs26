@@ -27,6 +27,7 @@ interface MatchLayout {
   slotBottomY: number;
   slotInX: number;
   slotOutX: number;
+  cardHeight: number;
 }
 
 interface SideRoundLayout {
@@ -72,7 +73,7 @@ export class TournamentDetailComponent implements OnInit {
   private readonly toastService = inject(ToastService);
 
   private readonly sideCardWidth = 300;
-  private readonly sideCardHeight = 112;
+  private readonly sideCardHeight = 144;
   private readonly finalCardWidth = 360;
   private readonly finalCardHeight = 160;
   private readonly roundGap = 156;
@@ -158,6 +159,8 @@ export class TournamentDetailComponent implements OnInit {
         return empty;
       }
       const centerX = this.sidePadding + this.finalCardWidth / 2;
+      const cardHeight = this.cardHeightFor(soloMatch, true);
+      const cardY = this.topPadding;
       return {
         leftRounds: [],
         rightRounds: [],
@@ -167,17 +170,18 @@ export class TournamentDetailComponent implements OnInit {
           roundNumber: soloMatch.roundNumber,
           roundIndex: 0,
           slotIndex: 0,
-          centerY: this.topPadding + this.finalCardHeight / 2,
+          centerY: cardY + cardHeight / 2,
           cardX: centerX - this.finalCardWidth / 2,
-          cardY: this.topPadding,
-          slotTopY: this.topPadding + this.finalCardHeight / 2 - this.slotDeltaY,
-          slotBottomY: this.topPadding + this.finalCardHeight / 2 + this.slotDeltaY,
+          cardY,
+          slotTopY: this.playerSlotY(cardY, soloMatch, 1, true),
+          slotBottomY: this.playerSlotY(cardY, soloMatch, 2, true),
           slotInX: centerX - this.finalCardWidth / 2,
-          slotOutX: centerX + this.finalCardWidth / 2
+          slotOutX: centerX + this.finalCardWidth / 2,
+          cardHeight
         },
         edges: [],
         width: this.sidePadding * 2 + this.finalCardWidth,
-        height: this.topPadding * 2 + this.finalCardHeight
+        height: this.topPadding * 2 + cardHeight
       };
     }
 
@@ -211,6 +215,8 @@ export class TournamentDetailComponent implements OnInit {
 
       const leftMatches = leftMatchesRaw.map((match, slotIndex) => {
         const centerY = this.centerYFor(roundIndex, slotIndex);
+        const cardHeight = this.cardHeightFor(match);
+        const cardY = centerY - cardHeight / 2;
         const layout: MatchLayout = {
           match,
           side: 'LEFT',
@@ -219,11 +225,12 @@ export class TournamentDetailComponent implements OnInit {
           slotIndex,
           centerY,
           cardX: leftColumnX,
-          cardY: centerY - this.sideCardHeight / 2,
-          slotTopY: centerY - this.slotDeltaY,
-          slotBottomY: centerY + this.slotDeltaY,
+          cardY,
+          slotTopY: this.playerSlotY(cardY, match, 1),
+          slotBottomY: this.playerSlotY(cardY, match, 2),
           slotInX: leftColumnX,
-          slotOutX: leftColumnX + this.sideCardWidth
+          slotOutX: leftColumnX + this.sideCardWidth,
+          cardHeight
         };
         leftLookup.set(`LEFT:${roundIndex}:${slotIndex}`, layout);
         return layout;
@@ -231,6 +238,8 @@ export class TournamentDetailComponent implements OnInit {
 
       const rightMatches = rightMatchesRaw.map((match, slotIndex) => {
         const centerY = this.centerYFor(roundIndex, slotIndex);
+        const cardHeight = this.cardHeightFor(match);
+        const cardY = centerY - cardHeight / 2;
         const layout: MatchLayout = {
           match,
           side: 'RIGHT',
@@ -239,11 +248,12 @@ export class TournamentDetailComponent implements OnInit {
           slotIndex,
           centerY,
           cardX: rightColumnX,
-          cardY: centerY - this.sideCardHeight / 2,
-          slotTopY: centerY - this.slotDeltaY,
-          slotBottomY: centerY + this.slotDeltaY,
+          cardY,
+          slotTopY: this.playerSlotY(cardY, match, 1),
+          slotBottomY: this.playerSlotY(cardY, match, 2),
           slotInX: rightColumnX + this.sideCardWidth,
-          slotOutX: rightColumnX
+          slotOutX: rightColumnX,
+          cardHeight
         };
         rightLookup.set(`RIGHT:${roundIndex}:${slotIndex}`, layout);
         return layout;
@@ -269,7 +279,7 @@ export class TournamentDetailComponent implements OnInit {
     for (const round of leftRounds) {
       for (const source of round.matches) {
         const targetSlotIndex = Math.floor(source.slotIndex / 2);
-        const target = leftLookup.get(`LEFT:${round.round}:${targetSlotIndex}`);
+        const target = leftLookup.get(`LEFT:${source.roundIndex + 1}:${targetSlotIndex}`);
         if (!target) {
           continue;
         }
@@ -289,7 +299,7 @@ export class TournamentDetailComponent implements OnInit {
     for (const round of rightRounds) {
       for (const source of round.matches) {
         const targetSlotIndex = Math.floor(source.slotIndex / 2);
-        const target = rightLookup.get(`RIGHT:${round.round}:${targetSlotIndex}`);
+        const target = rightLookup.get(`RIGHT:${source.roundIndex + 1}:${targetSlotIndex}`);
         if (!target) {
           continue;
         }
@@ -311,6 +321,8 @@ export class TournamentDetailComponent implements OnInit {
       const final = finalRound.matches[0];
       const finalRoundIndex = rounds.length - 1;
       const finalCenterY = this.centerYFor(finalRoundIndex, 0);
+      const cardHeight = this.cardHeightFor(final, true);
+      const cardY = finalCenterY - cardHeight / 2;
       finalMatch = {
         match: final,
         side: 'CENTER',
@@ -319,11 +331,12 @@ export class TournamentDetailComponent implements OnInit {
         slotIndex: 0,
         centerY: finalCenterY,
         cardX: finalX,
-        cardY: finalCenterY - this.finalCardHeight / 2,
-        slotTopY: finalCenterY - this.slotDeltaY,
-        slotBottomY: finalCenterY + this.slotDeltaY,
+        cardY,
+        slotTopY: this.playerSlotY(cardY, final, 1, true),
+        slotBottomY: this.playerSlotY(cardY, final, 2, true),
         slotInX: finalX,
-        slotOutX: finalX + this.finalCardWidth
+        slotOutX: finalX + this.finalCardWidth,
+        cardHeight
       };
 
       const leftChampion = leftRounds[leftRounds.length - 1]?.matches[0];
@@ -665,6 +678,18 @@ export class TournamentDetailComponent implements OnInit {
 
   private centerYFor(roundIndex: number, slotIndex: number): number {
     return this.topPadding + this.verticalUnit * Math.pow(2, roundIndex) * (2 * slotIndex + 1);
+  }
+
+  private cardHeightFor(match: TournamentMatch, final = false): number {
+    const base = final ? this.finalCardHeight : this.sideCardHeight;
+    return match.status === 'PLAYING' ? base + 30 : base;
+  }
+
+  private playerSlotY(cardY: number, match: TournamentMatch, row: 1 | 2, final = false): number {
+    const liveOffset = match.status === 'PLAYING' ? 24 : 0;
+    const firstRowCenter = final ? 66 : 58;
+    const rowGap = final ? 50 : 43;
+    return cardY + firstRowCenter + liveOffset + (row === 2 ? rowGap : 0);
   }
 
   private computePlayerPath(playerId: number | null): PlayerPath {
