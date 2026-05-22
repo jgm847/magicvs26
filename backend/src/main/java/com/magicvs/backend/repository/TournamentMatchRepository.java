@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface TournamentMatchRepository extends JpaRepository<TournamentMatch, Long> {
 
@@ -16,4 +17,6 @@ public interface TournamentMatchRepository extends JpaRepository<TournamentMatch
     boolean existsByTournamentIdAndRoundNumberAndStatusIn(Long tournamentId, Integer roundNumber, Collection<MatchStatus> statuses);
 
     boolean existsByTournamentIdAndRoundNumber(Long tournamentId, Integer roundNumber);
+
+    Optional<TournamentMatch> findByBattleMatchId(Long battleMatchId);
 }

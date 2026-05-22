@@ -6,6 +6,7 @@ import {
   JoinTournamentPayload,
   ReportMatchPayload,
   TournamentDetail,
+  TournamentMatchAcceptance,
   TournamentMatch,
   TournamentSummary
 } from '../../models/tournament.model';
@@ -35,6 +36,10 @@ export class TournamentService {
 
   reportMatch(matchId: number, payload: ReportMatchPayload): Observable<TournamentMatch> {
     return this.http.post<TournamentMatch>(`${this.apiBase}/matches/${matchId}/report`, payload, { headers: this.authHeadersRequired() });
+  }
+
+  acceptTournamentMatch(matchId: number): Observable<TournamentMatchAcceptance> {
+    return this.http.post<TournamentMatchAcceptance>(`${this.apiBase}/matches/${matchId}/accept`, {}, { headers: this.authHeadersRequired() });
   }
 
   private authHeadersOptional(): HttpHeaders {

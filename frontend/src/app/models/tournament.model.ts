@@ -28,6 +28,9 @@ export interface TournamentMatch {
   player1Id: number | null;
   player2Id: number | null;
   winnerId: number | null;
+  battleMatchId: number | null;
+  player1Accepted: boolean;
+  player2Accepted: boolean;
   status: MatchStatus;
 }
 
@@ -59,4 +62,13 @@ export interface JoinTournamentPayload {
 
 export interface ReportMatchPayload {
   winnerId: number;
+}
+
+export interface TournamentMatchAcceptance {
+  tournamentMatchId: number;
+  battleMatchId: number | null;
+  status: MatchStatus;
+  ready: boolean;
+  battleMatchCreated: boolean;
+  link: string;
 }

@@ -34,6 +34,15 @@ public class TournamentMatch {
     @Column(name = "reported_by_user_id")
     private Long reportedByUserId;
 
+    @Column(name = "battle_match_id")
+    private Long battleMatchId;
+
+    @Column(name = "player1_accepted")
+    private Boolean player1Accepted = false;
+
+    @Column(name = "player2_accepted")
+    private Boolean player2Accepted = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private MatchStatus status;
@@ -50,6 +59,12 @@ public class TournamentMatch {
         this.updatedAt = LocalDateTime.now();
         if (this.status == null) {
             this.status = MatchStatus.PENDING;
+        }
+        if (this.player1Accepted == null) {
+            this.player1Accepted = false;
+        }
+        if (this.player2Accepted == null) {
+            this.player2Accepted = false;
         }
     }
 
@@ -116,6 +131,30 @@ public class TournamentMatch {
 
     public void setReportedByUserId(Long reportedByUserId) {
         this.reportedByUserId = reportedByUserId;
+    }
+
+    public Long getBattleMatchId() {
+        return battleMatchId;
+    }
+
+    public void setBattleMatchId(Long battleMatchId) {
+        this.battleMatchId = battleMatchId;
+    }
+
+    public Boolean getPlayer1Accepted() {
+        return player1Accepted;
+    }
+
+    public void setPlayer1Accepted(Boolean player1Accepted) {
+        this.player1Accepted = player1Accepted;
+    }
+
+    public Boolean getPlayer2Accepted() {
+        return player2Accepted;
+    }
+
+    public void setPlayer2Accepted(Boolean player2Accepted) {
+        this.player2Accepted = player2Accepted;
     }
 
     public MatchStatus getStatus() {

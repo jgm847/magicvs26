@@ -2,8 +2,10 @@ package com.magicvs.backend.controller;
 
 import com.magicvs.backend.dto.MatchHistoryDto;
 import com.magicvs.backend.dto.ReportMatchRequest;
+import com.magicvs.backend.dto.TournamentMatchAcceptanceDto;
 import com.magicvs.backend.dto.TournamentMatchDto;
 import com.magicvs.backend.service.AuthService;
+import com.magicvs.backend.service.BattleService;
 import com.magicvs.backend.service.MatchService;
 import com.magicvs.backend.service.TournamentService;
 import java.util.List;
@@ -28,14 +30,17 @@ public class MatchController {
     private final TournamentService tournamentService;
     private final MatchService matchService;
     private final AuthService authService;
+    private final BattleService battleService;
 
     public MatchController(
             TournamentService tournamentService,
             MatchService matchService,
-            AuthService authService) {
+            AuthService authService,
+            BattleService battleService) {
         this.tournamentService = tournamentService;
         this.matchService = matchService;
         this.authService = authService;
+        this.battleService = battleService;
     }
 
     @PostMapping("/{id}/report")
@@ -46,6 +51,18 @@ public class MatchController {
         Long reporterId = requireAuthenticatedUser(authorization);
         TournamentMatchDto updated = tournamentService.reportMatchResult(id, reporterId, request.getWinnerId());
         return ResponseEntity.ok(updated);
+    }
+
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<TournamentMatchAcceptanceDto> acceptTournamentMatch(
+            @PathVariable Long id,
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        Long userId = requireAuthenticatedUser(authorization);
+        TournamentMatchAcceptanceDto accepted = tournamentService.acceptTournamentMatch(id, userId);
+        if (accepted.battleMatchCreated() && accepted.battleMatchId() != null) {
+            battleService.initializeMatch(accepted.battleMatchId(), accepted.deck1Id(), accepted.deck2Id());
+        }
+        return ResponseEntity.ok(accepted);
     }
 
     @GetMapping("/history")

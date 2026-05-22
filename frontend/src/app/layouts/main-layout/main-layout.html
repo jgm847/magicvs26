@@ -240,7 +240,7 @@
                       <div class="mt-3 flex items-center gap-2" (click)="$event.stopPropagation()">
                         <button (click)="acceptBattleInvite(notification)" 
                           class="px-4 py-1.5 rounded-lg bg-secondary text-[10px] font-black uppercase tracking-wider text-on-secondary hover:bg-secondary/80 transition-all active:scale-95 shadow-md shadow-secondary/20">
-                          Aceptar
+                          {{ isTournamentBattleInvite(notification) ? 'Listo' : 'Aceptar' }}
                         </button>
                         <button (click)="rejectBattleInvite(notification)" 
                           class="px-4 py-1.5 rounded-lg bg-zinc-800 border border-white/10 text-[10px] font-black uppercase tracking-wider text-zinc-400 hover:bg-zinc-700 hover:text-white transition-all active:scale-95">

@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { TournamentService } from '../../core/services/tournament.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -69,6 +69,7 @@ interface BracketVm {
 })
 export class TournamentDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly tournamentService = inject(TournamentService);
   private readonly toastService = inject(ToastService);
 
@@ -94,6 +95,7 @@ export class TournamentDetailComponent implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly currentUserId = signal<number | null>(null);
   readonly hoveredPlayerId = signal<number | null>(null);
+  readonly acceptingMatchId = signal<number | null>(null);
 
   readonly zoom = signal(1);
   readonly panX = signal(18);
@@ -445,6 +447,40 @@ export class TournamentDetailComponent implements OnInit {
     });
   }
 
+  acceptTournamentMatch(match: TournamentMatch): void {
+    if (match.battleMatchId) {
+      this.router.navigateByUrl(`/battle/${match.battleMatchId}`);
+      return;
+    }
+
+    if (!this.canAcceptTournamentMatch(match)) {
+      return;
+    }
+
+    this.acceptingMatchId.set(match.id);
+    this.tournamentService.acceptTournamentMatch(match.id).subscribe({
+      next: result => {
+        this.acceptingMatchId.set(null);
+
+        if (result.ready && result.battleMatchId) {
+          this.toastService.show('Ambos jugadores listos. Entrando a la arena...', 'success');
+          this.router.navigateByUrl(result.link || `/battle/${result.battleMatchId}`);
+          return;
+        }
+
+        this.toastService.show('Listo confirmado. Esperando al rival...', 'info');
+        const tournamentId = this.tournament()?.id;
+        if (tournamentId) {
+          this.fetchTournament(tournamentId);
+        }
+      },
+      error: err => {
+        this.acceptingMatchId.set(null);
+        this.toastService.show(err?.error?.message || 'No se pudo confirmar el match de torneo', 'error');
+      }
+    });
+  }
+
   toggleCommandPanel(): void {
     this.commandPanelCollapsed.update(value => !value);
   }
@@ -562,12 +598,70 @@ export class TournamentDetailComponent implements OnInit {
       return false;
     }
 
+    if (match.status === 'PLAYING' || match.battleMatchId) {
+      return false;
+    }
+
     const current = this.currentUserId();
     if (!current) {
       return false;
     }
 
     return match.player1Id === current || match.player2Id === current;
+  }
+
+  canShowMatchAction(match: TournamentMatch): boolean {
+    const current = this.currentUserId();
+    return !!current
+      && (match.player1Id === current || match.player2Id === current)
+      && match.status !== 'FINISHED'
+      && match.status !== 'REVIEW';
+  }
+
+  canAcceptTournamentMatch(match: TournamentMatch): boolean {
+    if (!this.canShowMatchAction(match) || match.battleMatchId) {
+      return false;
+    }
+
+    return !this.currentUserAccepted(match);
+  }
+
+  currentUserAccepted(match: TournamentMatch): boolean {
+    const current = this.currentUserId();
+    if (!current) {
+      return false;
+    }
+
+    if (match.player1Id === current) {
+      return match.player1Accepted === true;
+    }
+
+    if (match.player2Id === current) {
+      return match.player2Accepted === true;
+    }
+
+    return false;
+  }
+
+  matchActionLabel(match: TournamentMatch): string {
+    if (this.acceptingMatchId() === match.id) {
+      return 'Confirmando';
+    }
+
+    if (match.battleMatchId) {
+      return 'Entrar';
+    }
+
+    if (this.currentUserAccepted(match)) {
+      return 'Esperando rival';
+    }
+
+    return 'Listo';
+  }
+
+  isMatchActionDisabled(match: TournamentMatch): boolean {
+    return this.acceptingMatchId() === match.id
+      || (!match.battleMatchId && !this.canAcceptTournamentMatch(match));
   }
 
   canReportForWinner(match: TournamentMatch, winnerId: number | null): boolean {
@@ -619,6 +713,11 @@ export class TournamentDetailComponent implements OnInit {
       return;
     }
 
+    const interactiveTarget = event.target as HTMLElement | null;
+    if (interactiveTarget?.closest('button, a, input, select, textarea')) {
+      return;
+    }
+
     this.panningPointerId = event.pointerId;
     this.isPanning.set(true);
     this.panStartX = event.clientX;
@@ -626,8 +725,8 @@ export class TournamentDetailComponent implements OnInit {
     this.panOriginX = this.panX();
     this.panOriginY = this.panY();
 
-    const target = event.currentTarget as HTMLElement;
-    target.setPointerCapture(event.pointerId);
+    const canvasTarget = event.currentTarget as HTMLElement;
+    canvasTarget.setPointerCapture(event.pointerId);
   }
 
   onCanvasPointerMove(event: PointerEvent): void {

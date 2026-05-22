@@ -20,6 +20,7 @@ public class TournamentService {
     private final TournamentRepository tournamentRepository;
     private final TournamentParticipantRepository participantRepository;
     private final TournamentMatchRepository matchRepository;
+    private final MatchRepository arenaMatchRepository;
     private final RegistroRepository userRepository;
     private final DeckRepository deckRepository;
     private final NotificationService notificationService;
@@ -28,6 +29,7 @@ public class TournamentService {
         TournamentRepository tournamentRepository,
         TournamentParticipantRepository participantRepository,
         TournamentMatchRepository matchRepository,
+        MatchRepository arenaMatchRepository,
         RegistroRepository userRepository,
         DeckRepository deckRepository,
         NotificationService notificationService
@@ -35,6 +37,7 @@ public class TournamentService {
         this.tournamentRepository = tournamentRepository;
         this.participantRepository = participantRepository;
         this.matchRepository = matchRepository;
+        this.arenaMatchRepository = arenaMatchRepository;
         this.userRepository = userRepository;
         this.deckRepository = deckRepository;
         this.notificationService = notificationService;
@@ -182,6 +185,75 @@ public class TournamentService {
         return toMatchDto(match);
     }
 
+    @Transactional
+    public TournamentMatchAcceptanceDto acceptTournamentMatch(Long matchId, Long userId) {
+        TournamentMatch match = matchRepository.findById(matchId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match no encontrado"));
+
+        if (!match.hasPlayer(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo los participantes pueden confirmar este match");
+        }
+
+        if (match.getStatus() == MatchStatus.FINISHED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Este match ya ha finalizado");
+        }
+
+        if (match.getBattleMatchId() != null) {
+            return new TournamentMatchAcceptanceDto(
+                match.getId(),
+                match.getBattleMatchId(),
+                match.getStatus(),
+                true,
+                false,
+                "/battle/" + match.getBattleMatchId(),
+                null,
+                null
+            );
+        }
+
+        if (Objects.equals(userId, match.getPlayer1Id())) {
+            match.setPlayer1Accepted(true);
+        }
+        if (Objects.equals(userId, match.getPlayer2Id())) {
+            match.setPlayer2Accepted(true);
+        }
+
+        boolean bothAccepted = Boolean.TRUE.equals(match.getPlayer1Accepted()) && Boolean.TRUE.equals(match.getPlayer2Accepted());
+        if (!bothAccepted) {
+            TournamentMatch saved = matchRepository.save(match);
+            return new TournamentMatchAcceptanceDto(
+                saved.getId(),
+                null,
+                saved.getStatus(),
+                false,
+                false,
+                "/tournaments/" + saved.getTournament().getId(),
+                null,
+                null
+            );
+        }
+
+        ArenaMatchLaunch launch = createBattleMatchForTournamentMatch(match);
+        notifyTournamentBattleStarted(match.getTournament().getId(), match);
+
+        return new TournamentMatchAcceptanceDto(
+            match.getId(),
+            launch.matchId(),
+            match.getStatus(),
+            true,
+            true,
+            "/battle/" + launch.matchId(),
+            launch.deck1Id(),
+            launch.deck2Id()
+        );
+    }
+
+    @Transactional
+    public Optional<TournamentMatchDto> completeArenaMatchResult(Long arenaMatchId, Long winnerId) {
+        return matchRepository.findByBattleMatchId(arenaMatchId)
+            .map(match -> reportMatchResult(match.getId(), winnerId, winnerId));
+    }
+
     private void validateCreateRequest(CreateTournamentRequest request) {
         if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payload inválido");
@@ -275,31 +347,97 @@ public class TournamentService {
         }
     }
 
+    private ArenaMatchLaunch createBattleMatchForTournamentMatch(TournamentMatch tournamentMatch) {
+        if (tournamentMatch.getBattleMatchId() != null) {
+            Match arenaMatch = arenaMatchRepository.findById(tournamentMatch.getBattleMatchId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Partida de arena no encontrada"));
+            return new ArenaMatchLaunch(arenaMatch.getId(), arenaMatch.getDeck1Id(), arenaMatch.getDeck2Id());
+        }
+
+        Long p1 = tournamentMatch.getPlayer1Id();
+        Long p2 = tournamentMatch.getPlayer2Id();
+        if (p1 == null || p2 == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El match de torneo no tiene dos jugadores");
+        }
+
+        User player1 = userRepository.findById(p1)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Jugador 1 no encontrado"));
+        User player2 = userRepository.findById(p2)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Jugador 2 no encontrado"));
+
+        Long tournamentId = tournamentMatch.getTournament().getId();
+        Long deck1Id = participantRepository.findByTournamentIdAndUserId(tournamentId, p1)
+            .map(participant -> participant.getDeck().getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mazo del jugador 1 no encontrado"));
+        Long deck2Id = participantRepository.findByTournamentIdAndUserId(tournamentId, p2)
+            .map(participant -> participant.getDeck().getId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mazo del jugador 2 no encontrado"));
+
+        Match arenaMatch = new Match();
+        arenaMatch.setPlayer1(player1);
+        arenaMatch.setPlayer2(player2);
+        arenaMatch.setDeck1Id(deck1Id);
+        arenaMatch.setDeck2Id(deck2Id);
+        arenaMatch.setStatus(MatchStatus.LIVE);
+        arenaMatch.setFormat("Tournament");
+
+        Match savedArenaMatch = arenaMatchRepository.save(arenaMatch);
+
+        tournamentMatch.setBattleMatchId(savedArenaMatch.getId());
+        tournamentMatch.setStatus(MatchStatus.PLAYING);
+        matchRepository.save(tournamentMatch);
+
+        return new ArenaMatchLaunch(savedArenaMatch.getId(), deck1Id, deck2Id);
+    }
+
     private void notifyPlayersMatchReady(Long tournamentId, TournamentMatch match) {
         Long p1 = match.getPlayer1Id();
         Long p2 = match.getPlayer2Id();
 
         String p1Name = resolveUserName(p1);
         String p2Name = resolveUserName(p2);
+        String tournamentLink = "/tournaments/" + tournamentId;
 
         if (p1 != null) {
             Map<String, Object> data = new HashMap<>();
-            data.put("title", "Tu match está listo");
-            data.put("message", "Tu rival es " + p2Name + ". ¡Prepárate para jugar!");
-            data.put("link", "/tournaments/" + tournamentId);
+            data.put("title", "Match de torneo listo");
+            data.put("message", "Tu rival es " + p2Name + ". Confirma que estás listo para crear la partida.");
+            data.put("link", tournamentLink);
             data.put("tournamentId", tournamentId);
-            data.put("matchId", match.getId());
+            data.put("tournamentMatchId", match.getId());
             notificationService.createNotification(p1, NotificationType.BATTLE_INVITE, data);
         }
 
         if (p2 != null) {
             Map<String, Object> data = new HashMap<>();
-            data.put("title", "Tu match está listo");
-            data.put("message", "Tu rival es " + p1Name + ". ¡Prepárate para jugar!");
-            data.put("link", "/tournaments/" + tournamentId);
+            data.put("title", "Match de torneo listo");
+            data.put("message", "Tu rival es " + p1Name + ". Confirma que estás listo para crear la partida.");
+            data.put("link", tournamentLink);
             data.put("tournamentId", tournamentId);
-            data.put("matchId", match.getId());
+            data.put("tournamentMatchId", match.getId());
             notificationService.createNotification(p2, NotificationType.BATTLE_INVITE, data);
+        }
+    }
+
+    private void notifyTournamentBattleStarted(Long tournamentId, TournamentMatch match) {
+        if (match.getBattleMatchId() == null) {
+            return;
+        }
+
+        String battleLink = "/battle/" + match.getBattleMatchId();
+        for (Long userId : List.of(match.getPlayer1Id(), match.getPlayer2Id())) {
+            if (userId == null) {
+                continue;
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("title", "Partida de torneo creada");
+            data.put("message", "Ambos jugadores han confirmado. Entra a la arena para jugar el match.");
+            data.put("link", battleLink);
+            data.put("tournamentId", tournamentId);
+            data.put("tournamentMatchId", match.getId());
+            data.put("matchId", match.getBattleMatchId());
+            notificationService.createNotification(userId, NotificationType.MATCH_FOUND, data);
         }
     }
 
@@ -352,7 +490,13 @@ public class TournamentService {
             match.getPlayer1Id(),
             match.getPlayer2Id(),
             match.getWinnerId(),
+            match.getBattleMatchId(),
+            match.getPlayer1Accepted(),
+            match.getPlayer2Accepted(),
             match.getStatus()
         );
+    }
+
+    private record ArenaMatchLaunch(Long matchId, Long deck1Id, Long deck2Id) {
     }
 }

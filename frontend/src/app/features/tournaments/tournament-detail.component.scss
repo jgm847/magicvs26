@@ -178,6 +178,46 @@
   font-weight: 700;
 }
 
+.match-header-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.42rem;
+  min-width: 0;
+}
+
+.match-action {
+  border-radius: 9999px;
+  background:
+    linear-gradient(135deg, rgba(146, 204, 255, 0.28), rgba(186, 158, 255, 0.24)),
+    rgba(9, 18, 35, 0.72);
+  color: #f4f8ff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  padding: 0.34rem 0.54rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 18px rgba(146, 204, 255, 0.12);
+  transition: filter 140ms ease, opacity 140ms ease, transform 140ms ease;
+}
+
+.match-action:hover:not(:disabled) {
+  filter: drop-shadow(0 0 12px rgba(146, 204, 255, 0.34));
+  transform: translateY(-1px);
+}
+
+.match-action.waiting,
+.match-action:disabled {
+  cursor: default;
+  opacity: 0.56;
+  filter: none;
+}
+
 .live-pill {
   display: inline-flex;
   align-items: center;

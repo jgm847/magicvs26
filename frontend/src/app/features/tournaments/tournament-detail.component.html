@@ -144,7 +144,21 @@
                   >
                     <div class="match-header">
                       <span class="ui-label">Seed {{ layout.match.matchNumber }}</span>
-                      <span class="status-chip">{{ matchStatusLabel(layout.match.status) }}</span>
+                      <div class="match-header-actions">
+                        <span class="status-chip">{{ matchStatusLabel(layout.match.status) }}</span>
+                        @if (canShowMatchAction(layout.match)) {
+                          <button
+                            class="match-action"
+                            type="button"
+                            [class.waiting]="currentUserAccepted(layout.match) && !layout.match.battleMatchId"
+                            [disabled]="isMatchActionDisabled(layout.match)"
+                            (pointerdown)="$event.stopPropagation()"
+                            (click)="$event.stopPropagation(); acceptTournamentMatch(layout.match)"
+                          >
+                            {{ matchActionLabel(layout.match) }}
+                          </button>
+                        }
+                      </div>
                     </div>
 
                     @if (isPlaying(layout.match)) {
@@ -216,7 +230,21 @@
                     [class.live]="isPlaying(layout.match)"
                   >
                     <div class="match-header">
-                      <span class="status-chip">{{ matchStatusLabel(layout.match.status) }}</span>
+                      <div class="match-header-actions">
+                        @if (canShowMatchAction(layout.match)) {
+                          <button
+                            class="match-action"
+                            type="button"
+                            [class.waiting]="currentUserAccepted(layout.match) && !layout.match.battleMatchId"
+                            [disabled]="isMatchActionDisabled(layout.match)"
+                            (pointerdown)="$event.stopPropagation()"
+                            (click)="$event.stopPropagation(); acceptTournamentMatch(layout.match)"
+                          >
+                            {{ matchActionLabel(layout.match) }}
+                          </button>
+                        }
+                        <span class="status-chip">{{ matchStatusLabel(layout.match.status) }}</span>
+                      </div>
                       <span class="ui-label">Seed {{ layout.match.matchNumber }}</span>
                     </div>
 
@@ -285,7 +313,21 @@
                 >
                   <div class="match-header">
                     <span class="ui-label">Gran Final</span>
-                    <span class="status-chip">{{ matchStatusLabel(finalLayout.match.status) }}</span>
+                    <div class="match-header-actions">
+                      <span class="status-chip">{{ matchStatusLabel(finalLayout.match.status) }}</span>
+                      @if (canShowMatchAction(finalLayout.match)) {
+                        <button
+                          class="match-action"
+                          type="button"
+                          [class.waiting]="currentUserAccepted(finalLayout.match) && !finalLayout.match.battleMatchId"
+                          [disabled]="isMatchActionDisabled(finalLayout.match)"
+                          (pointerdown)="$event.stopPropagation()"
+                          (click)="$event.stopPropagation(); acceptTournamentMatch(finalLayout.match)"
+                        >
+                          {{ matchActionLabel(finalLayout.match) }}
+                        </button>
+                      }
+                    </div>
                   </div>
 
                   <div

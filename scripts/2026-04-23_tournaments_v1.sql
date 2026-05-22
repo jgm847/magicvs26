@@ -31,6 +31,9 @@ CREATE TABLE IF NOT EXISTS matches (
     player2_id BIGINT NULL,
     winner_id BIGINT NULL,
     reported_by_user_id BIGINT NULL,
+    battle_match_id BIGINT NULL,
+    player1_accepted BOOLEAN NOT NULL DEFAULT FALSE,
+    player2_accepted BOOLEAN NOT NULL DEFAULT FALSE,
     status VARCHAR(20) NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL
